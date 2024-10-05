@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -81,10 +82,25 @@ public class ProdutoController {
 	    return produtoNovo;
 	}
 
-	@PutMapping // método para editar
-	public Produto editarProduto(@RequestBody Produto produto) {
-		Produto produtoNovo = dao.save(produto);
-		return produtoNovo;
+	@PutMapping("/{id_produto}")
+	public ResponseEntity<Produto> editarProduto(@PathVariable Integer id_produto, @RequestBody Produto produtoAtualizado) {
+	    return dao.findById(id_produto)
+	        .map(produto -> {
+	            if (produtoAtualizado.getNome_produto() != null) {
+	                produto.setNome_produto(produtoAtualizado.getNome_produto());
+	            }
+	            if (produtoAtualizado.getPreco_venda() != null) {
+	                produto.setPreco_venda(produtoAtualizado.getPreco_venda());
+	            }
+	            
+	            if (produtoAtualizado.getDescricao_produto() != null) {
+	                produto.setDescricao_produto(produtoAtualizado.getDescricao_produto());
+	            }
+	            // Atualize outros campos conforme necessário
+	            Produto produtoSalvo = dao.save(produto);
+	            return ResponseEntity.ok(produtoSalvo);
+	        })
+	        .orElseGet(() -> ResponseEntity.notFound().build());
 	}
 
 	@DeleteMapping("/{id_produto}") // método para deletar
